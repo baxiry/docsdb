@@ -1,17 +1,14 @@
-<h1 style="color:green; font-weight:bold; text-align:center;" >ZaraDB</h1>
+<h1 style="color:green; font-weight:bold; text-align:center;" >mydb</h1>
+**DocsDB**: A **Lightweight, High-Performance Embedded Document Database**.
 
-is an open-licensed document database with no hidden restrictions and good performance.
-Its goal is to be a lightweight alternative to common documentary databases.
-It can also provide superior performance compared to Mongo in many common use cases.
+DocsDB is designed as a lightweight and efficient alternative to traditional document databases like MongoDB.
+Optimized for common use cases, it aims to provide superior performance in many scenarios.
 
 **Installation**
 
 ```bash
-git clone --depth 1 https://github.com/baxiry/zaradb.git && cd zaradb && go build . && ./zaradb
+go get https://github.com/baxiry/mydb
 ```
-
-and then open : `localhost:1111`
-
 
 > [!NOTE]
 > It is possible that some things will change within the API, 
@@ -22,16 +19,8 @@ and then open : `localhost:1111`
 ## API Documentation
 ***Zara receives queries in JSON format. However, you can use JavaScript objects through the web interface provided by Zara via: `localhost:1111`***
 
-<<<<<<< HEAD
-      val, ok := imap.Get(1) //  123 , treu
-      val, ok = imap.Get(10) //  0, false (key not exist)
- 
-      ok := imap.HasKey(2) //  true
-      ok = imap.HasKey(20) //  false
-=======
 ### Insert
 ***insert one object:***
->>>>>>> 8e8ef89 (embed document database in go)
 
 ```javascript
 {
