@@ -2,44 +2,49 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 
-	"github.com/bashery/kv"
+	"github.com/bashery/litedb/engine"
 )
 
 func main() {
 
-	intmap := kv.New[int, int]()
-	intmap.Set(1, 123)
-
-	fmt.Println(intmap.Get(1))
-	test, ok := intmap.Get(234)
-	if !ok {
-		fmt.Println(234, "not found")
+	db := engine.NewDB("test.db")
+	if db == nil {
+		fmt.Println("what ??? ")
 	}
+	defer db.Close()
 
-	fmt.Println(test)
+	query := f(`{"collection":"users", "action":"insert", "data":{"name":"%s", "age":%d}`, randName(), randAge())
 
-	intval, _ := intmap.Get(1)
-	if intval != 123 {
-		fmt.Printf("key must be %d", 123)
-	}
+	res := db.HandleQueries(query)
+	fmt.Println(res)
 
-	if ok := intmap.HasKey(1); ok != true {
-		fmt.Printf("'1' key must be exist")
-	}
+	res = db.HandleQueries(`{"collection":"users", "action":"findMany", "match":{"name":{"$en": "m"}}}`)
+	fmt.Println("end with 'm'\n", res)
 
-	//
-	strmap := kv.New[string, string]()
-	strmap.Set("hi", "hello")
-	sval, _ := strmap.Get("hi")
-	if sval != "hello" {
-		fmt.Printf("value must be %s", "hello")
-	}
+	res = db.HandleQueries(`{"collection":"users", "action":"findMany", "match":{"name":{"$c": "i"}}}`)
+	fmt.Println("contain with 'm'\n", res)
 
-	if ok := strmap.HasKey("hi"); ok != true {
-		fmt.Printf("'hi' key must be exist")
-	}
-
-	fmt.Println("All Functions pass")
-	fmt.Println("=============== concurrent mod ==============")
 }
+
+// List of 50 sample names.
+var names = []string{
+	"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Heidi", "Ivan", "Judy",
+	"Kevin", "Linda", "Mike", "Nancy", "Oscar", "Penny", "Quentin", "Rachel", "Steve", "Tina",
+	"Uma", "Vince", "Wendy", "Xander", "Yara", "Zayn", "Adam", "Bella", "Chris", "Diana",
+	"Ethan", "Fiona", "George", "Hannah", "Isaac", "Jasmine", "Kyle", "Laura", "Mark", "Nora",
+	"Oliver", "Paula", "Quin", "Ryan", "Sophia", "Thomas", "Olivia", "Peter", "Sara", "Ben",
+}
+
+// randName returns a random name from the names list.
+func randName() string {
+	return names[rand.Intn(len(names))]
+}
+
+// randAge returns a random age between 1 and 100.
+func randAge() int {
+	return rand.Intn(70) + 10
+}
+
+var f = fmt.Sprintf
