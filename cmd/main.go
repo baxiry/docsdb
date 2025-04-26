@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/bashery/litedb/engine"
+	"github.com/baxery/docia/store"
 )
 
 func main() {
 
-	db := engine.NewDB("test.db")
+	db := store.NewDB("test.db")
 	if db == nil {
 		fmt.Println("what ??? ")
 	}
@@ -20,11 +20,11 @@ func main() {
 	res := db.HandleQueries(query)
 	fmt.Println(res)
 
-	res = db.HandleQueries(`{"collection":"users", "action":"findMany", "match":{"name":{"$en": "m"}}}`)
-	fmt.Println("end with 'm'\n", res)
+	res = db.HandleQueries(`{"collection":"users", "action":"findMany", "match":{"name":{"$en": "y"}}}`)
+	fmt.Println("get all docs that's name ends by 'm'\n", res)
 
 	res = db.HandleQueries(`{"collection":"users", "action":"findMany", "match":{"name":{"$c": "i"}}}`)
-	fmt.Println("contain with 'm'\n", res)
+	fmt.Println("docs that's name contain with 'i'\n", res)
 
 }
 

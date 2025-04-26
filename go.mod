@@ -1,4 +1,4 @@
-module github.com/bashery/litedb
+module github.com/baxery/docia
 
 go 1.24
 
