@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/tidwall/gjson"
@@ -14,7 +15,29 @@ var db *Store
 
 type Store struct {
 	db     *bbolt.DB
+	mt     sync.Mutex
 	lastid map[string]uint64
+}
+
+func (s *Store) RunSync(duration time.Duration) {
+	if s.db.NoSync == false {
+		fmt.Println("db is synced")
+		return
+	}
+	fmt.Println("db is not synced")
+	if duration < 50 {
+		duration = 50
+	}
+
+	go func() {
+		for {
+			time.Sleep(time.Millisecond * duration)
+			s.mt.Lock()
+			s.db.Sync()
+			s.mt.Unlock()
+			//fmt.Println("sync done")
+		}
+	}()
 }
 
 func NewDB(path string) *Store {
@@ -23,6 +46,7 @@ func NewDB(path string) *Store {
 	if err != nil {
 		log.Fatal(err)
 	}
+	kv.NoSync = true
 
 	lastIds := make(map[string]uint64, 0)
 
@@ -58,6 +82,7 @@ func NewDB(path string) *Store {
 
 	db = &Store{db: kv, lastid: lastIds}
 	//toRemove for k, v := range db.lastid {fmt.Println(k, v)}
+	db.RunSync(100)
 	return db
 }
 

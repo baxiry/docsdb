@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/baxery/docia/store"
 )
@@ -11,7 +12,7 @@ func main() {
 
 	db := store.NewDB("test.db")
 	if db == nil {
-		fmt.Println("what ??? ")
+		fmt.Println("when create new db instance")
 	}
 	defer db.Close()
 
@@ -25,6 +26,8 @@ func main() {
 
 	res = db.HandleQueries(`{"collection":"users", "action":"findMany", "match":{"name":{"$c": "i"}}}`)
 	fmt.Println("docs that's name contain with 'i'\n", res)
+
+	time.Sleep(time.Second * 5)
 
 }
 
