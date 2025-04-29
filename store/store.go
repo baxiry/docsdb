@@ -4,13 +4,10 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/tidwall/gjson"
 	"go.etcd.io/bbolt"
-	"modernc.org/kv"
 )
 
 var db *Store
@@ -207,72 +204,4 @@ func toByte(number int) []byte {
 func (s *Store) Close() {
 	s.db.Sync()
 	s.db.Close()
-}
-
-type KVStore struct {
-	db *kv.DB
-}
-
-// إنشاء وفتح قاعدة البيانات
-func NewStore(path string) (*KVStore, error) {
-	if err := os.MkdirAll(path, 0700); err != nil {
-		return nil, err
-	}
-	db, err := kv.Open(path, nil)
-	if err != nil {
-		if strings.Contains(err.Error(), "No such file") {
-			db, err = kv.Create(path, nil)
-			return &KVStore{db: db}, nil
-		}
-		return nil, err
-	}
-	return &KVStore{db: db}, nil
-}
-
-// إغلاق قاعدة البيانات
-func (s *KVStore) Close() error {
-	return s.db.Close()
-}
-
-// Set: إدخال أو تحديث قيمة
-func (s *KVStore) Set(key, value []byte) error {
-	err := s.db.BeginTransaction()
-	if err != nil {
-		return err
-	}
-
-	if err := s.db.Set(key, value); err != nil {
-		s.db.Rollback()
-		return err
-	}
-	return s.db.Commit()
-}
-
-// Get: استرجاع قيمة
-func (s *KVStore) Get(key []byte) ([]byte, error) {
-	err := s.db.BeginTransaction()
-	if err != nil {
-		return nil, err
-	}
-
-	val, err := s.db.Get(nil, key)
-	if err != nil {
-		s.db.Rollback()
-		return nil, err
-	}
-	return val, nil
-}
-
-// Delete: حذف قيمة
-func (s *KVStore) Delete(key []byte) error {
-	err := s.db.BeginTransaction()
-	if err != nil {
-		return err
-	}
-
-	if err := s.db.Delete(key); err != nil {
-		s.db.Rollback()
-		return err
-	}
-	return s.db.Commit()
 }
