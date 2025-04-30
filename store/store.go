@@ -17,6 +17,7 @@ type Store struct {
 	db     *bbolt.DB
 	mt     sync.Mutex
 	lastid map[string]uint64
+	synced bool
 }
 
 func (s *Store) RunSync(duration time.Duration) {
@@ -24,7 +25,11 @@ func (s *Store) RunSync(duration time.Duration) {
 		fmt.Println("db is synced")
 		return
 	}
-	fmt.Println("db is not synced")
+
+	if duration == 0 {
+		duration = 200
+	}
+
 	if duration < 50 {
 		duration = 50
 	}
@@ -32,10 +37,13 @@ func (s *Store) RunSync(duration time.Duration) {
 	go func() {
 		for {
 			time.Sleep(time.Millisecond * duration)
-			s.mt.Lock()
-			s.db.Sync()
-			s.mt.Unlock()
-			//fmt.Println("sync done")
+			if !s.synced {
+
+				s.mt.Lock()
+				s.db.Sync()
+				s.mt.Unlock()
+				//fmt.Println("sync done")
+			}
 		}
 	}()
 }
@@ -46,7 +54,6 @@ func NewDB(path string) *Store {
 	if err != nil {
 		log.Fatal(err)
 	}
-	kv.NoSync = true
 
 	lastIds := make(map[string]uint64, 0)
 
@@ -80,8 +87,9 @@ func NewDB(path string) *Store {
 		return nil
 	}
 
-	db = &Store{db: kv, lastid: lastIds}
-	//toRemove for k, v := range db.lastid {fmt.Println(k, v)}
+	db = &Store{db: kv, lastid: lastIds, synced: false}
+	kv.NoSync = true
+
 	db.RunSync(100)
 	return db
 }

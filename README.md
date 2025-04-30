@@ -1,13 +1,12 @@
-<h1 style="color:green; font-weight:bold; text-align:center;" >mydb</h1>
-**DocsDB**: A **Lightweight, High-Performance Embedded Document Database**.
+<h1 style="color:green; font-weight:bold; text-align:center;" >DocsDB</h1>
 
-DocsDB is designed as a lightweight and efficient alternative to traditional document databases like MongoDB.
-Optimized for common use cases, it aims to provide superior performance in many scenarios.
+**DocsDB:** A ***lightweight, fast, embedded, document database.*** Think of it as the SQLite of the NoSQL world.
+
 
 **Installation**
 
 ```bash
-go get https://github.com/baxiry/mydb
+go get https://github.com/baxiry/docsdb
 ```
 
 > [!NOTE]
@@ -17,7 +16,7 @@ go get https://github.com/baxiry/mydb
 
 
 ## API Documentation
-***Zara receives queries in JSON format. However, you can use JavaScript objects through the web interface provided by Zara via: `localhost:1111`***
+***DocsDB receives queries in JSON format**
 
 ### Insert
 ***insert one object:***
