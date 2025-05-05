@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/baxery/docia/store"
+	"github.com/baxery/docstore/store"
 )
 
 func main() {

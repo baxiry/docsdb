@@ -1,12 +1,12 @@
-<h1 style="color:green; font-weight:bold; text-align:center;" >DocsDB</h1>
+<h1 style="color:green; font-weight:bold; text-align:center;" >Docstore</h1>
 
-**DocsDB:** A ***lightweight, fast, embedded, document database.*** Think of it as the SQLite of the NoSQL world.
+**Docstore:** A ***lightweight, fast, embedded, document database.*** Think of it as the SQLite of the NoSQL world.
 
 
 **Installation**
 
 ```bash
-go get https://github.com/baxiry/docsdb
+go get https://github.com/baxiry/docstore
 ```
 
 > [!NOTE]
@@ -16,18 +16,20 @@ go get https://github.com/baxiry/docsdb
 
 
 ## API Documentation
-***DocsDB receives queries in JSON format**
+***Docstore receives queries as a JSON format**
+
+
 
 ### Insert
 ***insert one object:***
 
-```javascript
+```json
 {
-  collection: "users",
-  action: "insert",
-  data: {
-    name: "adam",
-    age: 23,
+  "collection": "users",
+  "action": "insert",
+  "data": {
+    "name": "adam",
+    "age": 23,
   },
 }
 ```

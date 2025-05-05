@@ -1,4 +1,4 @@
-module github.com/baxery/docia
+module github.com/baxery/docstore
 
 go 1.24
 
