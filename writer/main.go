@@ -9,6 +9,50 @@ import (
 	"go.etcd.io/bbolt"
 )
 
+const max = 10
+
+var entries = make(chan EntriesData, max)
+
+func (s *Store) Writer() {
+
+	var entriesdata = []EntriesData{}
+	var ready = true
+	for {
+
+		ready = false
+		for _, v := range entriesdata {
+			itm := v.Items[0]
+			fmt.Printf("  write %d %s %s %s\n", v.op, itm.Bucket, itm.Key, itm.Value)
+			time.Sleep(time.Millisecond * 30)
+		}
+		ready = true
+
+		time.Sleep(time.Millisecond * 100)
+		entriesdata = []EntriesData{}
+
+		for {
+			ent := <-entries
+			if ent.brk {
+				break
+			}
+			fmt.Println("reseve new data", ent.op)
+
+			entriesdata = append(entriesdata, ent)
+			if len(entriesdata) == max {
+				fmt.Println(" full pool")
+			}
+
+			if !ready {
+				continue
+			}
+			if len(entriesdata) == 5 {
+				break
+			}
+
+		}
+	}
+}
+
 func main() {
 	db, err := bbolt.Open("my.db", 0600, &bbolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
@@ -17,16 +61,27 @@ func main() {
 	defer db.Close()
 
 	store := NewStore(db)
-	_ = store
 	go store.Writer()
 
-	for i := 0; i <= 40; i++ {
+	ed := EntriesData{} //op: i
+	op := 0
+	for i := 0; i <= 20; i++ {
 		item := ItemData{"users", []byte("user:" + str(i)), []byte("value:" + str(i))}
-		ed := EntriesData{} //op: i
+		ed = EntriesData{} //op: i
 		ed.Items = append(ed.Items, item)
-		entry <- ed
-		time.Sleep(time.Millisecond * 200)
+
+		ed.op = op
+		entries <- ed
+		fmt.Println("send new data", ed.op)
+		op++
+		time.Sleep(time.Millisecond * 15)
 	}
+
+	ed.brk = true
+	entries <- ed
+	time.Sleep(time.Second * 2)
+
+	store.Close()
 }
 
 type Store struct {
@@ -37,6 +92,7 @@ type EntriesData struct {
 	op    int
 	Items []ItemData
 	Done  chan error
+	brk   bool
 }
 
 type ItemData struct {
@@ -45,55 +101,16 @@ type ItemData struct {
 	Value  []byte
 }
 
-var entry = make(chan EntriesData, 1)
-var Op int
-var mutex sync.Mutex
-
-func (s *Store) Writer() {
-	var entries []EntriesData
-	busy := false
-
-	for {
-		fmt.Println("entries size is ", len(entries))
-		itm := <-entry
-
-		mutex.Lock()
-		itm.op = Op
-		mutex.Unlock()
-
-		entries = append(entries, itm)
-
-		mutex.Lock()
-		Op++
-		mutex.Unlock()
-
-		if len(entries) == 5 && !busy {
-			readyEntries := entries
-			entries = []EntriesData{}
-			go func() {
-
-				busy = true
-				fmt.Println("busy", busy)
-
-				for _, v := range readyEntries {
-
-					itm := v.Items[0]
-					fmt.Printf("write %d %s %s %s\n", v.op, itm.Bucket, itm.Key, itm.Value)
-					time.Sleep(time.Millisecond * 100)
-				}
-				busy = false
-				fmt.Println("busy", busy)
-
-			}()
-		}
-	}
-}
 func NewStore(db *bbolt.DB) *Store {
 	s := &Store{
 		db: db,
 	}
-	go s.Writer()
+	//go s.Writer()
 	return s
 }
+
+func (db *Store) Close() {}
+
+var mut sync.RWMutex
 
 var str = fmt.Sprint
