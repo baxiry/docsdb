@@ -42,16 +42,23 @@ func main() {
 	//	s.benchSet(10)
 
 	k := s.FirstKey("user")
-	fmt.Println("\nuser", k)
+	println("\nfirst key as user", k)
 
 	k = s.FirstKey("emple")
-	fmt.Println("\nemple", k)
+	println("\nfirst key as emple", k)
 
 	k = s.FirstKey("uses")
-	fmt.Println("\nuses", k)
+	println("\nfirst key as uses", k)
 
 	k = s.FirstKey("m")
-	fmt.Println("\nm", k)
+	println("\nfirst key as m", k)
+
+	k = s.FirstKey("aaa")
+	println("\nfirst key as aaa", k)
+
+	k = s.FirstKey("xyz")
+	println("\nfirst key as xyz", k)
+
 }
 
 func (s *Store) LastKey(prefix string) string {
@@ -85,7 +92,7 @@ func (s *Store) benchGet(max uint64) {
 	}
 
 	fmt.Println(time.Since(start))
-	fmt.Println("read size:", size/1024, "kv")
+	fmt.Println("read size:", size/1024, "kb")
 
 }
 
@@ -109,6 +116,11 @@ func (s *Store) benchSet(max uint64) {
 }
 
 var data = map[string]string{
+	"aaa0": "value0",
+	"aaa1": "value1",
+	"aaa2": "value2",
+	"aaa3": "value3",
+	"aaa4": "value4",
 
 	"user0": "value0",
 	"user1": "value1",
@@ -160,4 +172,20 @@ func NewStore(dbFile string) *Store {
 
 	return &Store{db: db}
 
+}
+
+func (s *Store) Close() error {
+	return s.db.Close()
+}
+
+func (s *Store) Set(key, value []byte) error {
+	return s.db.Set(key, value)
+}
+
+func (s *Store) Get(key []byte) ([]byte, error) {
+	return s.db.Get(nil, key)
+}
+
+func (s *Store) Delete(key []byte) error {
+	return s.db.Delete(key)
 }

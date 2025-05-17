@@ -5,6 +5,7 @@ go 1.24
 require (
 	github.com/gobwas/glob v0.2.3
 	github.com/gorilla/websocket v1.5.3
+	github.com/guycipher/btree v1.3.2
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	go.etcd.io/bbolt v1.4.0
@@ -13,6 +14,8 @@ require (
 
 require (
 	github.com/edsrzf/mmap-go v1.1.0 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
+	github.com/hashicorp/go-msgpack v0.5.5 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
