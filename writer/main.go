@@ -13,39 +13,16 @@ import (
 const max = 30
 
 var (
-	mut             = &sync.Mutex{}
+	mut = &sync.Mutex{}
+
+	// pre allocate
 	entries         = make(chan EntriesData, max)
-	entriesdata     = []EntriesData{}
-	TempEntriesdata = []EntriesData{}
+	entriesdata     = make([]EntriesData, 0, max)
+	TempEntriesdata = make([]EntriesData, 0, max)
 )
 
-func write(entriesdata []EntriesData) bool {
-
-	TempEntriesdata = entriesdata
-
-	entriesdata = []EntriesData{}
-
-	fmt.Printf("\nstart writeing %d batchs\n", len(TempEntriesdata))
-
-	for _, ed := range TempEntriesdata {
-		itm := ed.Items[0]
-		fmt.Printf("    write %d %s %s %s\n", ed.op, itm.Bucket, itm.Key, itm.Value)
-		time.Sleep(time.Millisecond * 27)
-	}
-
-	for _, ed := range TempEntriesdata {
-		ed.Done <- fmt.Errorf("%d", ed.op)
-	}
-
-	if len(entriesdata) == 0 {
-		return true
-	}
-
-	return write(entriesdata)
-}
-
 func (s *Store) Writer() {
-	var ent EntriesData
+	var ent = EntriesData{}
 	var ready = true
 
 	for {
@@ -77,7 +54,7 @@ func (s *Store) Writer() {
 				}
 				itm := ed.Items[0]
 				fmt.Printf("    write %d %s %s %s\n", ed.op, itm.Bucket, itm.Key, itm.Value)
-				time.Sleep(time.Millisecond * 27)
+				time.Sleep(time.Millisecond * 6)
 			}
 
 			for _, ed := range TempEntriesdata {
@@ -86,6 +63,7 @@ func (s *Store) Writer() {
 					continue
 				}
 				ed.Done <- fmt.Errorf("%d", ed.op)
+				time.Sleep(time.Millisecond / 5)
 
 			}
 
@@ -133,10 +111,9 @@ func main() {
 
 		}(i)
 
-		time.Sleep(time.Millisecond * 5)
+		time.Sleep(time.Millisecond * 1)
 	}
-
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 2)
 
 	store.Close()
 }
