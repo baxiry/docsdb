@@ -38,6 +38,7 @@ type ItemData struct {
 }
 
 func (s *Store) Writer() {
+
 	var ent = EntriesData{}
 	var ready = true
 
@@ -69,14 +70,31 @@ func (s *Store) Writer() {
 					continue
 				}
 
-				for _, itm := range ed.Items {
+				var opError int
+
+				if len(ed.Items) > 1 {
+					fmt.Println("start transaction")
+					if ed.op > 30 {
+						ed.Done <- fmt.Errorf("an error")
+						continue
+					}
+				}
+
+				if len(ed.Items) > 1 {
+					for _, itm := range ed.Items {
+						if ed.op == opError {
+							fmt.Println("symulate transaction error", opError)
+							time.Sleep(time.Millisecond)
+							continue
+						}
+						fmt.Printf("   write %d %s %s %s\n", ed.op, itm.Bucket, itm.Key, itm.Value)
+						time.Sleep(time.Millisecond)
+					}
+				} else {
+					itm := ed.Items[0]
 					fmt.Printf("   write %d %s %s %s\n", ed.op, itm.Bucket, itm.Key, itm.Value)
 					time.Sleep(time.Millisecond)
 				}
-
-				//itm := ed.Items[0]
-				//fmt.Printf("   write %d %s %s %s\n", ed.op, itm.Bucket, itm.Key, itm.Value)
-				//time.Sleep(time.Millisecond)
 			}
 
 			// symulate syncing time
@@ -89,7 +107,6 @@ func (s *Store) Writer() {
 				}
 				ed.Done <- fmt.Errorf("%d", ed.op)
 				time.Sleep(time.Millisecond * 2)
-
 			}
 
 			mut.Lock()
@@ -118,18 +135,27 @@ func main() {
 	for i := 1; i <= 50; i++ {
 		go func(i int) {
 			ed := EntriesData{}
+			ed.op = i
 
 			item := ItemData{"users", []byte("user:" + str(i)), []byte("value:" + str(i))}
-
 			ed.Items = append(ed.Items, item)
 
-			ed.op = i
+			if i%5 == 0 {
+				item.Bucket = "contacts"
+				item.Key = []byte("user:" + str(i+100))
+				item.Value = []byte("contacts value :" + str(i+100))
+
+				ed.Items = append(ed.Items, item)
+			}
+
 			ed.Done = make(chan error, 1)
 			entries <- ed
 			fmt.Printf("send: %d\n", ed.op)
 
-			if fmt.Sprint(<-ed.Done) != strconv.Itoa(ed.op) {
-				fmt.Printf("----------- Failure ent: %d\n", ed.op)
+			res := <-ed.Done
+
+			if fmt.Sprint(res) != strconv.Itoa(ed.op) {
+				fmt.Printf("----------- Failure ent: %d: %v\n", ed.op, res)
 			} else {
 				fmt.Printf("----------- Succes ent: %d\n", ed.op)
 			}
